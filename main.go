@@ -5,27 +5,27 @@ import (
 	"net/http"
 )
 
-// Three Essentials of a Web Application
-// 1. handler
-// 2. router (called ServeMux in Go Terminology)
-// 3. web server (go has a built-in web server, so we don't need third party web servers like Apache or NGINX)
-
-// 1. handler
 func home(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write([]byte("Hello from snippet box"))
 }
 
-func main() {
-	// 2. router / serveMux
-	mux := http.NewServeMux()
+// Add a snippetView handler function
+func snippetView(w http.ResponseWriter, _ *http.Request) {
+	_, _ = w.Write([]byte("Display a specific snippet..."))
+}
 
-	// registering home function as handler for "/" URL pattern
+// Add a snippetCreate handler function
+func snippetCreate(w http.ResponseWriter, _ *http.Request) {
+	_, _ = w.Write([]byte("Create a new snippet..."))
+}
+
+func main() {
+	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
+	// registering two new handler functions and corresponding URL patterns
+	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/snippet/view", snippetView)
 
 	log.Println("Starting the web server on port :4000")
-
-	// 3. web server
-	if err := http.ListenAndServe(":4000", mux); err != nil {
-		log.Fatal(err)
-	}
+	log.Fatal(http.ListenAndServe(":4000", mux))
 }
