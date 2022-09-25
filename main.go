@@ -22,11 +22,10 @@ func snippetCreate(w http.ResponseWriter, _ *http.Request) {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/create", snippetCreate)
-	mux.HandleFunc("/snippet/view", snippetView)
+	http.HandleFunc("/", home)
+	http.HandleFunc("/snippet/create", snippetCreate)
+	http.HandleFunc("/snippet/view", snippetView)
 
 	log.Println("Starting the web server on port :4000")
-	log.Fatal(http.ListenAndServe(":4000", mux))
+	log.Fatal(http.ListenAndServe(":4000", nil))
 }
