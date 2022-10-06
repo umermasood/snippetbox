@@ -1,3 +1,3 @@
-module github.com/umermasood/foundations
+module github.com/umermasood/snippetbox
 
 go 1.19
