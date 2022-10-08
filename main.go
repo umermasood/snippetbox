@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -13,18 +15,23 @@ func home(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Hello from snippet box"))
 }
 
-func snippetView(w http.ResponseWriter, _ *http.Request) {
-	_, _ = w.Write([]byte("Display a specific snippet..."))
+func snippetView(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	_, _ = fmt.Fprintf(w, "Display a specific snippet by ID %d...", id)
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	// throw 405 (method not allowed) if the request method is not POST
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		_, _ = w.Write([]byte("Method Not Allowed"))
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", "POST")
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	_, _ = w.Write([]byte("Create a new snippet..."))
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write([]byte(`{"response":"Create a new snippet..."}`))
 }
 
 func main() {
