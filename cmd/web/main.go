@@ -24,8 +24,15 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// the server now uses custom errorLog for logging errors
+	srv := &http.Server{
+		Addr:     *addr,
+		Handler:  mux,
+		ErrorLog: errorLog,
+	}
+
 	infoLog.Printf("Starting server on %s", *addr)
-	err := http.ListenAndServe(*addr, mux)
+	err := srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
 
