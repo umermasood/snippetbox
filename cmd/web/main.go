@@ -25,18 +25,10 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	mux := http.NewServeMux()
-
-	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static/")})
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
-
 	srv := &http.Server{
-		Addr:     *addr,
-		Handler:  mux,
+		Addr: *addr,
+		// Call the new app.routes() method to get the ServeMux containing our routes
+		Handler:  app.routes(),
 		ErrorLog: errorLog,
 	}
 
