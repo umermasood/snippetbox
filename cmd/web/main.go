@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 )
 
-// application struct holds application wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
@@ -21,7 +20,6 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// inject dependencies in the application struct
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
@@ -32,7 +30,6 @@ func main() {
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static/")})
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	// update the route declarations to use app methods as handlers
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
