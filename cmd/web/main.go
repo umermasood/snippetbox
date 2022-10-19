@@ -8,26 +8,27 @@ import (
 	"path/filepath"
 )
 
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	flag.Parse()
 
-	mux := http.NewServeMux()
-
-	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static/")})
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
-
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// the server now uses custom errorLog for logging errors
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	srv := &http.Server{
-		Addr:     *addr,
-		Handler:  mux,
+		Addr: *addr,
+		// Call the new app.routes() method to get the ServeMux containing our routes
+		Handler:  app.routes(),
 		ErrorLog: errorLog,
 	}
 
