@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	// we need the driver’s init() function to run so that it can register itself with the database/sql package
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
@@ -15,10 +19,20 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	// Define a new command-line flag for the MySQL DSN connection string
+	dsn := flag.String("dsn", "web:snippetbox-web@/snippetbox?parseTime=true", "MySQL data source")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer func(db *sql.DB) {
+		_ = db.Close()
+	}(db)
 
 	app := &application{
 		errorLog: errorLog,
@@ -26,15 +40,27 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr: *addr,
-		// Call the new app.routes() method to get the ServeMux containing our routes
+		Addr:     *addr,
 		Handler:  app.routes(),
 		ErrorLog: errorLog,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
+}
+
+// The openDB() function wraps sql.Open() and returns a sql.DB connection pool// for a given DSN.
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	// create a database connection and check for errors
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 type neuteredFileSystem struct {
