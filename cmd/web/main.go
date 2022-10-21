@@ -8,18 +8,18 @@ import (
 	"os"
 	"path/filepath"
 
-	// we need the driver’s init() function to run so that it can register itself with the database/sql package
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/umermasood/snippetbox/internal/models"
 )
 
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *models.SnippetModel
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	// Define a new command-line flag for the MySQL DSN connection string
 	dsn := flag.String("dsn", "web:snippetbox-web@/snippetbox?parseTime=true", "MySQL data source")
 	flag.Parse()
 
@@ -37,6 +37,7 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	srv := &http.Server{
@@ -50,13 +51,12 @@ func main() {
 	errorLog.Fatal(err)
 }
 
-// The openDB() function wraps sql.Open() and returns a sql.DB connection pool// for a given DSN.
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
-	// create a database connection and check for errors
+
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
